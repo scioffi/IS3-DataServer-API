@@ -1,0 +1,22 @@
+{
+  "name": "dataset-api",
+  "version": "1.0.0",
+  "description": "API access for datasets",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stephen Cioffi",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "moment": "^2.22.1",
+    "mysql": "^2.15.0",
+    "performance-now": "^2.1.0",
+    "request": "^2.87.0"
+  }
+}
