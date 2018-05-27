@@ -2,7 +2,7 @@ const db_utils = require("./db_utils.js");
 const bodyParser = require("body-parser");
 var now = require("performance-now")
 
-const API_PATH = "/dataset";
+const API_PATH = "/datasets";
 
 module.exports = function(app){
     app.use(bodyParser.urlencoded({
@@ -50,6 +50,7 @@ module.exports = function(app){
                                     } else {
                                         data.airports.last_entry = result4[0].timestamp;
 
+                                        // AIRPORT DATA
                                         db.query("SELECT DISTINCT(airport) AS airport FROM airport_data ORDER BY airport DESC;", (error5, result5, fields5) => {
                                             if(error5){
                                                 res.status(500).send(error5);
