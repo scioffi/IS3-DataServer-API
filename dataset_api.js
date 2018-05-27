@@ -1,6 +1,7 @@
 const db_utils = require("./db_utils.js");
 const bodyParser = require("body-parser");
-var now = require("performance-now")
+var now = require("performance-now");
+const Json2csvParser = require('json2csv').Parser;
 
 const API_PATH = "/datasets";
 
@@ -76,31 +77,52 @@ module.exports = function(app){
 
     });
 
-    app.get(API_PATH + "/mirrors", (req, res) => {
+    app.get(API_PATH + "/airports", (req, res) => {
         if(req.query.data === "all"){
             const start_time = now();
             let end_time;
 
             let db = db_utils.connectDatabase();
 
-            db.query("SELECT * FROM mirror_data", (error, result, fields) => {
-                end_time = now();
-
+            db.query("SELECT * FROM airport_data", (error, result, fields) => {
                 let data = {
-                    execution_time: (end_time - start_time),
+                    execution_time: 0,
+                    length: result.length,
                     results: result
-                }
-
-                db.end();
+                };
 
                 if(error){
                     res.status(500).send(error);
                 } else {
-                    res.status(200).send(data);
+                    const format = req.query.format;
+
+                    if(format === "json"){
+                        res.status(200).send(data);
+                    } else if(format === "csv"){
+                        const fields = ["id", "timestamp", "airport", "temp", "forecast", "visibility", "wind", "delay", "latency"];
+                        const opts = {fields};
+
+                        try {
+                            const parser = new Json2csvParser(opts);
+                            const csv = parser.parse(result);
+
+                            end_time = now();
+                            data.results = csv;
+                            data.execution_time = (end_time - start_time);
+
+                            res.set("Content-Type", "application/octet-stream");
+                            res.set("Content-Disposition", "attachment;filename=airports.csv");
+                            res.status(200).send(csv);
+                        } catch(csv_error){
+                            console.error(csv_error);
+                            res.status(500).send("A server error occurred converting data to CSV. Please try again or another format.");
+                        }
+                    }
+
                 }
             });
         } else {
-            res.send(400);
+            res.status(400).send("Invalid parameters");
         }
     });
 }
