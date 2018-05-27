@@ -85,19 +85,18 @@ module.exports = function(app){
             let db = db_utils.connectDatabase();
 
             db.query("SELECT * FROM airport_data", (error, result, fields) => {
-                let data = {
-                    execution_time: 0,
-                    length: result.length,
-                    results: result
-                };
-
                 if(error){
                     res.status(500).send(error);
                 } else {
                     const format = req.query.format;
 
                     if(format === "json"){
-                        res.status(200).send(data);
+
+                        end_time = now();
+
+                        res.set("Content-Type", "application/octet-stream");
+                        res.set("Content-Disposition", "attachment;filename=airports.json");
+                        res.status(200).send(result);
                     } else if(format === "csv"){
                         const fields = ["id", "timestamp", "airport", "temp", "forecast", "visibility", "wind", "delay", "latency"];
                         const opts = {fields};
@@ -107,8 +106,6 @@ module.exports = function(app){
                             const csv = parser.parse(result);
 
                             end_time = now();
-                            data.results = csv;
-                            data.execution_time = (end_time - start_time);
 
                             res.set("Content-Type", "application/octet-stream");
                             res.set("Content-Disposition", "attachment;filename=airports.csv");
