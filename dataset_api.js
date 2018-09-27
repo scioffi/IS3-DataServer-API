@@ -20,6 +20,9 @@ module.exports = function(app){
             },
             "airports": {
 
+            },
+            "pings": {
+
             }
         };
 
@@ -63,7 +66,24 @@ module.exports = function(app){
                                                 });
 
                                                 data.airports.list_of_airports = airports;
-                                                res.status(200).send(data);
+
+                                                db.query("SELECT COUNT(*) AS total from ping_data;", (error6, result6, fields6) => {
+                                                    if(error6){
+                                                        res.status(500).send(error6);
+                                                    } else {
+                                                        data.pings.entries = result6[0].total;
+
+                                                        db.query("SELECT * FROM ping_data ORDER BY id DESC LIMIT 1;", (error7, result7, fields7) => {
+                                                            if(error7){
+                                                                res.status(500).send(error7);
+                                                            } else {
+                                                                data.pings.last_entry = result7[0].timestamp;
+                                                                
+                                                                res.status(200).send(data);
+                                                            }
+                                                        });
+                                                    }
+                                                });
                                             }
                                         });
                                     }
