@@ -164,7 +164,7 @@ module.exports = function(app){
                         res.set("Content-Disposition", "attachment;filename=mirrors.json");
                         res.status(200).send(result);
                     } else if(format === "csv"){
-                        const fields = ["id", "timestamp", "server", "latency"];
+                        const fields = ["id", "timestamp", "server", "latency", "error"];
                         const opts = {fields};
 
                         try {
@@ -190,6 +190,48 @@ module.exports = function(app){
     });
 
     app.get(API_PATH + "/pings", (req, res) => {
-        
+        if(req.query.data === "all"){
+            const start_time = now();
+            let end_time;
+
+            let db = db_utils.connectDatabase();
+
+            db.query("SELECT * FROM ping_data", (error, result, fields) => {
+                if(error){
+                    res.status(500).send(error);
+                } else {
+                    const format = req.query.format;
+
+                    if(format === "json"){
+
+                        end_time = now();
+
+                        res.set("Content-Type", "application/octet-stream");
+                        res.set("Content-Disposition", "attachment;filename=pings.json");
+                        res.status(200).send(result);
+                    } else if(format === "csv"){
+                        const fields = ["id", "timestamp", "server", "latency", "error"];
+                        const opts = {fields};
+
+                        try {
+                            const parser = new Json2csvParser(opts);
+                            const csv = parser.parse(result);
+
+                            end_time = now();
+
+                            res.set("Content-Type", "application/octet-stream");
+                            res.set("Content-Disposition", "attachment;filename=pings.csv");
+                            res.status(200).send(csv);
+                        } catch(csv_error){
+                            console.error(csv_error);
+                            res.status(500).send("A server error occurred converting data to CSV. Please try again or another format.");
+                        }
+                    }
+
+                }
+            });
+        } else {
+            res.status(400).send("Invalid parameters");
+        }
     })
 }
