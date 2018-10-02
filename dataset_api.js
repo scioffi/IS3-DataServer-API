@@ -78,7 +78,7 @@ module.exports = function(app){
                                                                 res.status(500).send(error7);
                                                             } else {
                                                                 data.pings.last_entry = result7[0].timestamp;
-                                                                
+
                                                                 res.status(200).send(data);
                                                             }
                                                         });
@@ -188,4 +188,8 @@ module.exports = function(app){
             res.status(400).send("Invalid parameters");
         }
     });
+
+    app.get(API_PATH + "/pings", (req, res) => {
+        
+    })
 }
