@@ -16,13 +16,13 @@ module.exports = function(app){
 
         let data = {
             "mirrors": {
-
+                stats: {}
             },
             "airports": {
-
+                stats: {}
             },
             "pings": {
-
+                stats: {}
             }
         };
 
@@ -79,7 +79,19 @@ module.exports = function(app){
                                                             } else {
                                                                 data.pings.last_entry = result7[0].timestamp;
 
-                                                                res.status(200).send(data);
+                                                                db_utils.getStats("mirror_data", "latency", db, (r1) => {
+                                                                    data.mirrors.stats = r1;
+
+                                                                    db_utils.getStats("airport_data", "latency", db, (r2) => {
+                                                                        data.airports.stats = r2;
+
+                                                                        db_utils.getStats("ping_data", "latency", db, (r3) => {
+                                                                            data.pings.stats = r3;
+
+                                                                            res.status(200).send(data);
+                                                                        });
+                                                                    });
+                                                                });
                                                             }
                                                         });
                                                     }
@@ -94,7 +106,6 @@ module.exports = function(app){
                 });
             }
         });
-
     });
 
     app.get(API_PATH + "/airports", (req, res) => {
